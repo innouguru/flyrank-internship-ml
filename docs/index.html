@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="FlyRank ML Internship research paper on content opportunity scoring using search and engagement signals."
+  >
+
+  <meta
+    name="robots"
+    content="index, follow"
+  >
+
+  <title>Content Opportunity Scoring — FlyRank ML Internship</title>
+
+  <style>
+    :root {
+      --text: #1f2937;
+      --muted: #6b7280;
+      --heading: #111827;
+      --border: #e5e7eb;
+      --surface: #f9fafb;
+      --link: #2563eb;
+      --max-width: 900px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: white;
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+      line-height: 1.75;
+    }
+
+    .page {
+      width: min(100% - 40px, var(--max-width));
+      margin: 0 auto;
+      padding: 56px 0 80px;
+    }
+
+    article {
+      width: 100%;
+    }
+
+    h1 {
+      color: var(--heading);
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+      margin: 0 0 28px;
+    }
+
+    h2 {
+      color: var(--heading);
+      font-size: 1.65rem;
+      line-height: 1.3;
+      margin-top: 56px;
+      margin-bottom: 18px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h3 {
+      color: var(--heading);
+      font-size: 1.25rem;
+      margin-top: 32px;
+    }
+
+    p {
+      margin: 0 0 18px;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 24px;
+      padding-left: 28px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    a {
+      color: var(--link);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    blockquote {
+      margin: 24px 0;
+      padding: 16px 20px;
+      border-left: 4px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+    }
+
+    code {
+      font-family:
+        "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        Menlo,
+        monospace;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 5px;
+      font-size: 0.9em;
+    }
+
+    pre {
+      overflow-x: auto;
+      padding: 18px;
+      background: #111827;
+      color: #f9fafb;
+      border-radius: 8px;
+      margin: 24px 0;
+    }
+
+    pre code {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      color: inherit;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0 32px;
+      font-size: 0.95rem;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--surface);
+      color: var(--heading);
+      font-weight: 600;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 30px auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .paper-header {
+      margin-bottom: 48px;
+    }
+
+    .paper-header p:first-of-type {
+      color: var(--muted);
+    }
+
+    .footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        width: min(100% - 24px, var(--max-width));
+        padding: 32px 0 56px;
+      }
+
+      h2 {
+        margin-top: 42px;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      img {
+        margin: 22px auto;
+      }
+    }
+
+    @media print {
+      body {
+        color: black;
+      }
+
+      .page {
+        width: 100%;
+        max-width: none;
+        padding: 0;
+      }
+
+      a {
+        color: black;
+      }
+
+      img {
+        break-inside: avoid;
+      }
+
+      h2 {
+        break-after: avoid;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="page">
+    <article>
+
+      <header class="paper-header">
+        <p>
+          FlyRank ML Internship — Machine Learning Track
+        </p>
+      </header>
+
+      <h1 id="prioritizing-content-for-editorial-review-with-search-and-engagement-signals">Prioritizing Content for Editorial Review with Search and Engagement Signals</h1>
+<p><strong>Author:</strong> Innocent Chinwendu Uguru<br />
+<strong>Track:</strong> Machine Learning<br />
+<strong>FlyRank ML Internship</strong><br />
+<strong>Date:</strong> August 2026</p>
+<hr />
+<h2 id="abstract">Abstract</h2>
+<p>Which content pages should be prioritized for editorial review based on their search and engagement signals? Using the FlyRank ML Internship dataset, this study compares a position-aware rule-based baseline with a Random Forest ranking model built from five search and engagement features. The model uses a time-aware validation design, with October–December 2025 for training, January 2026 for model selection, and February 2026 reserved as the final holdout. On the February 2026 holdout, the Random Forest achieved 0.80 Precision@50 compared with 0.34 for the Week-4 rule-based baseline, against a positive-class base rate of 46.4%. The resulting ranking is intended as decision support for editors who need to prioritize limited review capacity, rather than as an automated verdict that a page should be refreshed.</p>
+<hr />
+<h2 id="1-introduction-problem-statement">1. Introduction / Problem Statement</h2>
+<p>Content teams may manage large numbers of pages while having limited time to review them. A practical problem is therefore not simply identifying pages with poor performance, but deciding which pages deserve attention first.</p>
+<p>This project investigates the following research question:</p>
+<blockquote>
+<p><strong>Which content pages should be prioritized for review based on their search and engagement signals?</strong></p>
+</blockquote>
+<p>The intended decision is a ranked review queue. The system produces a score for each candidate page and ranks pages from higher to lower priority. Editors can then review the highest-ranked candidates first.</p>
+<p>The system is deliberately designed as decision support rather than automated editorial decision-making. A high model score does not mean that a page must be refreshed. It indicates that the page is relatively high in the model's ranking and may deserve human attention.</p>
+<p>This framing also determines how the model is evaluated. Because the practical workflow involves reviewing a limited number of pages, the main evaluation metric is <strong>Precision@50</strong>: the proportion of the 50 highest-ranked candidates whose future outcome matches the study's positive target.</p>
+<hr />
+<h2 id="2-data">2. Data</h2>
+<h3 id="21-source-and-scope">2.1 Source and scope</h3>
+<p>The analysis uses the FlyRank internship dataset, specifically the <code>fact_content_daily_performance</code> table. The source contains daily performance records for individual content items and clients.</p>
+<p>The modelling period covers <strong>October 1, 2025 through February 28, 2026</strong>.</p>
+<p>Records were included only when both GSC and GA4 data were available. Daily records were aggregated into monthly client-content observations.</p>
+<p>The resulting monthly signals were:</p>
+<ul>
+<li>GSC impressions</li>
+<li>GSC clicks</li>
+<li>impression-weighted average GSC position</li>
+<li>GA4 pageviews</li>
+<li>GA4 engaged sessions</li>
+</ul>
+<p>Rows where <code>gsc_avg_position = 0</code> were excluded from the position-based analysis because zero is not a valid search-ranking position.</p>
+<p>The modelling population was further restricted to pages identified by the Week-4 position-aware CTR rule as potential review candidates.</p>
+<h3 id="22-public-safe-data-handling">2.2 Public-safe data handling</h3>
+<p>The analysis uses pseudonymous identifiers only for grouping and joining observations. Client-identifying information, private queries, and other private identifiers are not included in the public paper.</p>
+<p>Future-month outcome fields were used to construct the evaluation target but were not provided to the model as input features. This separation was necessary to reduce target leakage risk.</p>
+<hr />
+<h2 id="3-methodology">3. Methodology</h2>
+<h3 id="31-candidate-definition">3.1 Candidate definition</h3>
+<p>The rule-based baseline identified potential review candidates using a position-aware CTR rule.</p>
+<p>Content pages were grouped into position-peer buckets, and the median CTR was calculated for each bucket.</p>
+<p>A page became a candidate when its CTR was at least <strong>30% below the median CTR of its position-peer group</strong>.</p>
+<p>This candidate pool was then used as the population for the machine-learning ranking task.</p>
+<h3 id="32-target-definition">3.2 Target definition</h3>
+<p>The target represents a future-month outcome rather than the page's current performance.</p>
+<p>For each current-month candidate, the following month's CTR was compared with the following month's position-peer median CTR.</p>
+<p>A positive outcome was assigned when:</p>
+<p><code>next_month_ctr &gt;= next_month_peer_median</code></p>
+<p>This creates a binary target representing <strong>future peer-relative CTR recovery</strong>.</p>
+<p>The target is therefore a proxy for a future performance outcome. It is not a direct label for whether a content refresh would succeed.</p>
+<h3 id="33-features">3.3 Features</h3>
+<p>The Random Forest model uses five current-month search and engagement signals:</p>
+<ol>
+<li><code>gsc_impressions</code></li>
+<li><code>gsc_clicks</code></li>
+<li><code>gsc_avg_position</code></li>
+<li><code>ga4_pageviews</code></li>
+<li><code>ga4_engaged_sessions</code></li>
+</ol>
+<p>The CTR-derived candidate rule and future outcome fields were excluded from the model features.</p>
+<p>In particular, future-month variables were excluded because they were used to construct the target. Including them as model inputs would allow the model to use information about the outcome it is supposed to predict.</p>
+<h3 id="34-baseline">3.4 Baseline</h3>
+<p>The position-aware CTR rule provides a transparent baseline.</p>
+<p>Its purpose is not to be a perfect model. It provides a simple, interpretable reference against which the machine-learning ranking can be evaluated using the same candidate population, holdout period, and metric.</p>
+<h3 id="35-model">3.5 Model</h3>
+<p>A <strong>Random Forest classifier</strong> was used to learn the relationship between the five current-month search and engagement signals and the future peer-relative CTR recovery target.</p>
+<p>The model produces a probability score for each candidate. Candidates are then ranked from highest to lowest score to create a prioritized review list.</p>
+<h3 id="36-validation-design">3.6 Validation design</h3>
+<p>The final evaluation uses a time-aware design:</p>
+<table>
+<thead>
+<tr>
+<th>Period</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>October–December 2025</td>
+<td>Model training</td>
+</tr>
+<tr>
+<td>January 2026</td>
+<td>Model selection</td>
+</tr>
+<tr>
+<td>February 2026</td>
+<td>Final holdout evaluation</td>
+</tr>
+</tbody>
+</table>
+<p><img loading="lazy" alt="Time-aware model development and evaluation" src="../work/figures/validation_timeline.png" /></p>
+<p><strong>Figure 1. Time-aware model development and evaluation.</strong> </p>
+<p>Historical observations from October–December 2025 were used for training, January 2026 was used for model selection, and February 2026 was held out for the final evaluation.</p>
+<p>The February 2026 holdout was not used for model selection. It was reserved for the final comparison between the Random Forest ranking and the Week-4 rule-based baseline.</p>
+<p>This design is intended to better reflect how the system would operate in practice: information from earlier periods is used to build and select the ranking approach, while a later period is held back for final evaluation.</p>
+<h3 id="37-evaluation-metric">3.7 Evaluation metric</h3>
+<p>The primary metric is <strong>Precision@50</strong>.</p>
+<p>Precision@50 is the proportion of the 50 highest-ranked candidates whose target indicates future peer-relative CTR recovery.</p>
+<p>This metric matches the intended operational decision because editors have limited review capacity and need a prioritized shortlist rather than a prediction for every page.</p>
+<h3 id="38-leakage-checks">3.8 Leakage checks</h3>
+<p>The feature set was audited to ensure that variables used to construct the target were not included as model inputs.</p>
+<p>The temporal split also prevents later observations from being used to train or select a model that is then evaluated on that same future period.</p>
+<p>The final evaluation therefore measures the ranking on a held-out month that was not used for model selection.</p>
+<hr />
+<h2 id="4-results">4. Results</h2>
+<h3 id="41-model-versus-baseline">4.1 Model versus baseline</h3>
+<p>The Random Forest ranking was evaluated against the rule-based baseline on the same February 2026 holdout data using Precision@50.</p>
+<p><img loading="lazy" alt="Model versus baseline Precision@50" src="../work/figures/model_vs_baseline.png" /></p>
+<p><strong>Figure 2. February 2026 holdout performance.</strong> </p>
+<p>The Random Forest achieved 0.80 Precision@50 compared with 0.34 for the rule-based baseline. The positive-class base rate was 46.4%.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Evaluation period</th>
+<th style="text-align: right;">Precision@50</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Week-4 rule-based baseline</td>
+<td>February 2026</td>
+<td style="text-align: right;">0.34</td>
+</tr>
+<tr>
+<td>Random Forest</td>
+<td>February 2026</td>
+<td style="text-align: right;"><strong>0.80</strong></td>
+</tr>
+<tr>
+<td>Positive-class base rate</td>
+<td>February 2026</td>
+<td style="text-align: right;">0.464</td>
+</tr>
+</tbody>
+</table>
+<p>The February evaluation population had a positive-class base rate of <strong>46.4%</strong>.</p>
+<p>The Random Forest therefore achieved a measured Precision@50 of <strong>80.0%</strong>, compared with <strong>46.4%</strong> for the overall positive-class rate and <strong>34.0%</strong> for the Week-4 baseline.</p>
+<p>The Random Forest measured <strong>46 percentage points higher Precision@50</strong> than the baseline on the February 2026 holdout.</p>
+<p>In the top 50 ranked candidates, the Random Forest therefore concentrated substantially more positive target outcomes than the baseline under this evaluation setup.</p>
+<h3 id="42-interpretation">4.2 Interpretation</h3>
+<p>The result indicates that the Random Forest produced a more effective ranking than the transparent rule on the February holdout.</p>
+<p>The result should be interpreted as a ranking improvement under the evaluation setup. It does <strong>not</strong> establish that using the model causes CTR improvement, nor does it establish that every highly ranked page requires a content refresh.</p>
+<p>The target measures future peer-relative CTR recovery, so the result is specifically about concentrating that proxy outcome near the top of the ranking.</p>
+<p>The measured result is therefore best described as <strong>decision-support evidence</strong>, rather than evidence of a guaranteed editorial or business outcome.</p>
+<hr />
+<h2 id="5-limitations-honest-framing">5. Limitations &amp; Honest Framing</h2>
+<p>Several limitations affect how the results should be interpreted.</p>
+<h3 id="51-decision-support-not-automated-action">5.1 Decision support, not automated action</h3>
+<p>This work produces a decision-support ranking system.</p>
+<p>The model identifies and ranks candidates for human review; it does not determine that a page must be refreshed.</p>
+<p>A high ranking should therefore be interpreted as a reason to investigate a page, not as a final editorial decision.</p>
+<h3 id="52-proxy-target">5.2 Proxy target</h3>
+<p>The target represents future peer-relative CTR recovery.</p>
+<p>It does not directly measure whether a content refresh was successful because the analysis does not observe a controlled before-and-after editorial intervention.</p>
+<p>The model therefore should not be described as predicting refresh success.</p>
+<h3 id="53-observational-evaluation">5.3 Observational evaluation</h3>
+<p>The evaluation uses historical observational data.</p>
+<p>The higher Precision@50 measured for the Random Forest therefore does not establish that using the model will cause CTR or other engagement metrics to improve.</p>
+<p>The result demonstrates an observed difference in ranking performance under the defined evaluation setup.</p>
+<h3 id="54-limited-feature-set">5.4 Limited feature set</h3>
+<p>The model uses five search and engagement signals.</p>
+<p>Other factors that may influence editorial decisions are not represented, including:</p>
+<ul>
+<li>search intent</li>
+<li>content quality</li>
+<li>business importance</li>
+<li>SERP context</li>
+<li>recent editorial changes</li>
+<li>content freshness</li>
+<li>other contextual information available to an editor</li>
+</ul>
+<p>The model should therefore not be expected to capture every reason why a page may deserve attention.</p>
+<h3 id="55-single-final-holdout-period">5.5 Single final holdout period</h3>
+<p>February 2026 provides a held-out evaluation period, but it remains a single historical month.</p>
+<p>Performance may differ across other months, clients, content types, or future data.</p>
+<p>Additional future-period evaluation would be needed before making stronger claims about generalization.</p>
+<h3 id="56-human-review-remains-necessary">5.6 Human review remains necessary</h3>
+<p>The final action queue is a prioritized review queue.</p>
+<p>Editors should apply contextual judgment to each recommendation and may accept, modify, monitor, or reject a recommendation when the page context does not support an intervention.</p>
+<hr />
+<h2 id="6-ranked-recommendations">6. Ranked Recommendations</h2>
+<p>The final output is a ranked review queue containing the <strong>50 highest-scoring candidate pages</strong>.</p>
+<p>Candidates are ordered by the Random Forest model score, with higher scores receiving higher priority for review.</p>
+<p>Each candidate retains the reason code:</p>
+<p><code>CTR_BELOW_POSITION_PEERS</code></p>
+<p>This reason code identifies why the page entered the candidate population.</p>
+<h3 id="61-action-playbook">6.1 Action playbook</h3>
+<p>The initial recommendation is determined by search exposure:</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Initial recommendation</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gsc_impressions &lt;= 100</code></td>
+<td><strong>MONITOR</strong></td>
+<td>Limited search exposure; gather more evidence before intervention.</td>
+</tr>
+<tr>
+<td><code>gsc_impressions &gt; 100</code></td>
+<td><strong>SERP_REVIEW</strong></td>
+<td>Sufficient search exposure for human review of search intent and SERP presentation.</td>
+</tr>
+</tbody>
+</table>
+<p><img loading="lazy" alt="Initial action recommendation distribution" src="../work/figures/initial_action_recommendations_distribution.png" /></p>
+<p><strong>Figure 3. Initial action recommendation distribution for the final 50-page review queue.</strong> </p>
+<p>The action playbook assigned 41 candidates to <code>SERP_REVIEW</code> and 9 candidates to <code>MONITOR</code>.</p>
+<p>The final action queue contains:</p>
+<ul>
+<li><strong>41 SERP_REVIEW</strong> recommendations</li>
+<li><strong>9 MONITOR</strong> recommendations</li>
+</ul>
+<p>The distribution should not be interpreted as evidence that SERP review is always the correct action. It reflects the action rules applied to this particular ranked queue.</p>
+<h3 id="62-editorial-workflow">6.2 Editorial workflow</h3>
+<p>A practical workflow for using the output is:</p>
+<ol>
+<li>Generate the candidate population using the position-aware CTR rule.</li>
+<li>Score candidates using the trained Random Forest.</li>
+<li>Rank candidates by model score.</li>
+<li>Take the highest-priority candidates for editorial review.</li>
+<li>Apply the action playbook based on search exposure.</li>
+<li>Have an editor review the page and contextual evidence.</li>
+<li>Accept, modify, monitor, or reject the recommendation.</li>
+<li>Track future outcomes and use subsequent data to assess whether the ranking remains useful.</li>
+</ol>
+<p>The model therefore acts as a prioritization layer between observed performance data and human editorial review.</p>
+<h3 id="63-intended-use">6.3 Intended use</h3>
+<p>The intended use is to help editors decide <strong>where to spend limited review time first</strong>.</p>
+<p>The model does not:</p>
+<ul>
+<li>automatically edit content</li>
+<li>automatically refresh pages</li>
+<li>guarantee an increase in CTR</li>
+<li>determine whether a page is high quality</li>
+<li>replace editorial judgment</li>
+</ul>
+<p>Its role is to produce a ranked list that can help structure human review.</p>
+<hr />
+<h2 id="7-reproducibility">7. Reproducibility</h2>
+<p>The analysis is organized in the project repository so that the analytical workflow and reported results can be inspected.</p>
+<h3 id="repository">Repository</h3>
+<p><a href="https://github.com/innouguru/flyrank-internship-ml/">FlyRank ML Internship repository</a></p>
+<h3 id="main-capstone-notebook">Main capstone notebook</h3>
+<p><code>work/notebooks/capstone.ipynb</code></p>
+<p>The capstone notebook contains the executed analysis, evaluation, charts, action-playbook output, and final communication material.</p>
+<h3 id="supporting-outputs">Supporting outputs</h3>
+<p>The repository contains the generated recommendation artifacts under:</p>
+<p><code>work/outputs/</code></p>
+<p>These include:</p>
+<ul>
+<li><code>baseline_action_score.csv</code></li>
+<li><code>top_50_recommendation.csv</code></li>
+<li><code>action_queue.csv</code></li>
+</ul>
+<h3 id="figures">Figures</h3>
+<p>The figures embedded in this paper are stored under:</p>
+<p><code>work/figures/</code></p>
+<p>The public-safe figures include:</p>
+<ul>
+<li><code>model_vs_baseline.png</code></li>
+<li><code>validation_timeline.png</code></li>
+<li><code>action_distribution.png</code></li>
+</ul>
+<h3 id="re-running-the-analysis">Re-running the analysis</h3>
+<p>The notebook and committed output artifacts allow the analytical workflow and reported results to be inspected.</p>
+<p>Reproducing the analysis also requires access to the FlyRank dataset used by the internship and the project environment described in the repository.</p>
+<p>The final evaluation uses the time-aware design documented in the methodology:</p>
+<ul>
+<li>October–December 2025 — model training</li>
+<li>January 2026 — model selection</li>
+<li>February 2026 — final holdout evaluation</li>
+</ul>
+<p>The final paper should therefore be treated as a presentation layer over the executed notebook and committed artifacts rather than as a separate source of analytical truth.</p>
+<hr />
+<h2 id="8-acknowledgments-data-credit">8. Acknowledgments &amp; Data Credit</h2>
+<p><strong>Built on the FlyRank ML Internship dataset.</strong></p>
+<p>Data source: <a href="https://flyrank.ai">FlyRank</a></p>
+<p>This project was completed as part of the <strong>FlyRank ML Internship, Machine Learning track</strong>.</p>
+<p>I acknowledge FlyRank for providing the dataset and internship framework used to conduct this analysis.</p>
+<hr />
+
+      <footer class="footer">
+        <p>
+          Research paper produced as part of the FlyRank ML Internship.
+        </p>
+        <p>
+          Built on the FlyRank ML Internship dataset.
+        </p>
+      </footer>
+
+    </article>
+  </main>
+
+</body>
+</html>
